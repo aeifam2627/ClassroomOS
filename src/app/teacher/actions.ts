@@ -76,7 +76,7 @@ export async function logout() {
   redirect("/teacher/login");
 }
 
-// ส่งรหัส OTP 6 หลักไปทางอีเมล แทนการส่งลิงก์ — กัน token ถูก "เผา" ก่อนผู้ใช้กดจริง
+// ส่งรหัส OTP ไปทางอีเมล แทนการส่งลิงก์ — กัน token ถูก "เผา" ก่อนผู้ใช้กดจริง
 // จากระบบสแกนลิงก์อัตโนมัติของผู้ให้บริการอีเมล (Gmail/Outlook Safe Links ฯลฯ) ที่เปิดลิงก์ล่วงหน้าให้
 // ต้องตั้ง Email Template ฝั่ง Supabase Dashboard ให้ใช้ {{ .Token }} ด้วย ไม่ใช่ {{ .ConfirmationURL }}
 export async function requestPasswordReset(formData: FormData) {

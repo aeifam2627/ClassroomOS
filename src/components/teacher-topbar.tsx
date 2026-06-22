@@ -110,7 +110,7 @@ export function TeacherTopbar({
           )}
         </div>
 
-        <div className="flex items-center gap-2">
+        <Link href="/teacher/settings" className="flex items-center gap-2 rounded-full hover:opacity-80">
           <span className="flex h-9 w-9 items-center justify-center rounded-full bg-[var(--primary)]/10 text-sm font-semibold text-[var(--primary)]">
             {initial}
           </span>
@@ -118,7 +118,7 @@ export function TeacherTopbar({
             <p className="font-medium text-[var(--foreground)]">{name}</p>
             <p className="text-xs text-[var(--muted)]">ครูผู้สอน</p>
           </div>
-        </div>
+        </Link>
       </div>
     </header>
   );

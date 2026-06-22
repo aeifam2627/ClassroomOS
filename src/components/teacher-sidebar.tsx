@@ -19,7 +19,7 @@ const navItems: NavItem[] = [
   { label: "จัดการรายวิชา", href: "/teacher/courses", icon: BookOpen },
   { label: "นักเรียน", href: "/teacher/students", icon: Users },
   { label: "รายงาน", href: "/teacher/reports", icon: BarChart3 },
-  { label: "ตั้งค่า", href: "/teacher/settings", icon: Settings, disabled: true },
+  { label: "ตั้งค่า", href: "/teacher/settings", icon: Settings },
 ];
 
 export function TeacherSidebar({

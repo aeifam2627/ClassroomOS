@@ -1,5 +1,7 @@
 import Link from "next/link";
+import { BookCopy } from "lucide-react";
 import { createClient } from "@/lib/supabase/server";
+import { EmptyState } from "@/components/empty-state";
 import { importStudentsGlobal } from "@/app/teacher/(app)/students/actions";
 
 export default async function ImportStudentsGlobalPage({
@@ -31,13 +33,15 @@ export default async function ImportStudentsGlobalPage({
       )}
 
       {!courses || courses.length === 0 ? (
-        <p className="rounded-[var(--radius)] border border-[var(--border)] bg-white px-4 py-3 text-sm text-[var(--muted)]">
-          ยังไม่มีรายวิชา ต้อง{" "}
-          <Link href="/teacher/courses/new" className="font-medium text-[var(--primary)]">
-            สร้างรายวิชา
-          </Link>{" "}
-          ก่อนถึงจะนำเข้านักเรียนได้
-        </p>
+        <div className="rounded-2xl border border-[var(--border)] bg-white">
+          <EmptyState
+            icon={BookCopy}
+            title="ยังไม่มีรายวิชา"
+            description="ต้องสร้างรายวิชาก่อน จึงจะเลือกวิชาที่จะนำเข้านักเรียนได้"
+            actionHref="/teacher/courses/new"
+            actionLabel="สร้างรายวิชา"
+          />
+        </div>
       ) : (
         <form
           action={importStudentsGlobal}

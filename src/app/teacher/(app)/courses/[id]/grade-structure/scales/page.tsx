@@ -1,10 +1,11 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
-import { Pencil, Plus, Sparkles } from "lucide-react";
+import { Pencil, Plus, Scale, Sparkles } from "lucide-react";
 import { createClient } from "@/lib/supabase/server";
 import { ConfirmDeleteButton } from "@/components/confirm-delete-button";
 import { ConfirmSubmitButton } from "@/components/confirm-submit-button";
 import { SuccessPopup } from "@/components/success-popup";
+import { EmptyState } from "@/components/empty-state";
 import { withScoreRanges } from "@/lib/grading-scale";
 import { deleteGradingScale, seedStandardGradingScale } from "../actions";
 
@@ -81,9 +82,13 @@ export default async function ManageGradingScalesPage({
 
       <div className="overflow-hidden rounded-2xl border border-[var(--border)] bg-white">
         {scales.length === 0 ? (
-          <p className="px-4 py-10 text-center text-sm text-[var(--muted)]">
-            ยังไม่มีเกณฑ์การให้คะแนน กดปุ่ม “เพิ่มระดับ” เพื่อเริ่มต้น
-          </p>
+          <EmptyState
+            icon={Scale}
+            title="ยังไม่มีเกณฑ์การให้คะแนน"
+            description="เพิ่มระดับเกรดเองทีละระดับ หรือกดปุ่ม “ใช้เกณฑ์มาตรฐาน สพฐ.” ด้านบนเพื่อใช้ 8 ระดับสำเร็จรูป"
+            actionHref={`/teacher/courses/${courseId}/grade-structure/scales/new`}
+            actionLabel="เพิ่มระดับ"
+          />
         ) : (
           <>
             <div className="divide-y divide-[var(--border)] sm:hidden">

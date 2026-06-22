@@ -1,9 +1,10 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
-import { Pencil, Plus } from "lucide-react";
+import { ClipboardList, Pencil, Plus } from "lucide-react";
 import { createClient } from "@/lib/supabase/server";
 import { ConfirmDeleteButton } from "@/components/confirm-delete-button";
 import { SuccessPopup } from "@/components/success-popup";
+import { EmptyState } from "@/components/empty-state";
 import { deleteGradeItem } from "../../../actions";
 
 export default async function GradeItemsPage({
@@ -67,9 +68,13 @@ export default async function GradeItemsPage({
 
       <div className="overflow-hidden rounded-2xl border border-[var(--border)] bg-white">
         {(items?.length ?? 0) === 0 ? (
-          <p className="px-4 py-10 text-center text-sm text-[var(--muted)]">
-            ยังไม่มีชิ้นงานในหมวดหมู่นี้ กดปุ่ม “เพิ่มชิ้นงาน” เพื่อเริ่มต้น
-          </p>
+          <EmptyState
+            icon={ClipboardList}
+            title="ยังไม่มีชิ้นงานในหมวดหมู่นี้"
+            description="หมวดหมู่ที่ยังไม่มีชิ้นงานเลยจะใช้กรอกคะแนนไม่ได้ — เพิ่มชิ้นงาน/การสอบอย่างน้อย 1 รายการก่อน"
+            actionHref={`/teacher/courses/${courseId}/grade-structure/categories/${categoryId}/items/new`}
+            actionLabel="เพิ่มชิ้นงาน"
+          />
         ) : (
           <>
             <div className="divide-y divide-[var(--border)] sm:hidden">

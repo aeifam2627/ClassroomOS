@@ -1,9 +1,10 @@
 import { cookies } from "next/headers";
 import { redirect } from "next/navigation";
 import Link from "next/link";
-import { BookOpen, ChevronRight } from "lucide-react";
+import { BookOpen, ChevronRight, Inbox } from "lucide-react";
 import { STUDENT_SESSION_COOKIE, verifySessionToken } from "@/lib/student-session";
 import { getStudentCourses } from "@/lib/student-score-view";
+import { EmptyState } from "@/components/empty-state";
 
 export default async function StudentCoursesPage() {
   const cookieStore = await cookies();
@@ -44,9 +45,13 @@ export default async function StudentCoursesPage() {
         ))}
 
         {courses.length === 0 && (
-          <p className="col-span-full rounded-2xl border border-dashed border-[var(--border)] bg-white py-10 text-center text-sm text-[var(--muted)]">
-            ยังไม่มีวิชาที่ลงทะเบียนไว้ — ติดต่อครูผู้สอนให้เพิ่มชื่อคุณเข้าวิชา
-          </p>
+          <div className="col-span-full rounded-2xl border border-[var(--border)] bg-white">
+            <EmptyState
+              icon={Inbox}
+              title="ยังไม่มีวิชาที่ลงทะเบียนไว้"
+              description="ติดต่อครูผู้สอนให้เพิ่มชื่อคุณเข้าวิชา"
+            />
+          </div>
         )}
       </div>
     </div>

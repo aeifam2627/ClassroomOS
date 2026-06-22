@@ -43,3 +43,5 @@ next-env.d.ts
 # internal docs — keep local only, don't publish to the repo
 *.md
 !README.md
+
+.vercel

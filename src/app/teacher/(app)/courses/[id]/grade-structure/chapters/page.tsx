@@ -1,9 +1,10 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
-import { Pencil, Plus } from "lucide-react";
+import { BookOpen, Pencil, Plus } from "lucide-react";
 import { createClient } from "@/lib/supabase/server";
 import { ConfirmDeleteButton } from "@/components/confirm-delete-button";
 import { SuccessPopup } from "@/components/success-popup";
+import { EmptyState } from "@/components/empty-state";
 import { deleteChapter } from "../actions";
 
 export default async function ChaptersPage({
@@ -66,9 +67,13 @@ export default async function ChaptersPage({
 
       <div className="overflow-hidden rounded-2xl border border-[var(--border)] bg-white">
         {(chapters?.length ?? 0) === 0 ? (
-          <p className="px-4 py-10 text-center text-sm text-[var(--muted)]">
-            ยังไม่มีบทเรียน กดปุ่ม “เพิ่มบท” เพื่อเริ่มต้น
-          </p>
+          <EmptyState
+            icon={BookOpen}
+            title="ยังไม่มีบทเรียน"
+            description="แบ่งชิ้นงานออกเป็นบทเพื่อจัดกลุ่ม/กรองดูในหน้าชิ้นงานและบันทึกคะแนน (ไม่มีน้ำหนักคะแนน ไม่บังคับต้องมี)"
+            actionHref={`/teacher/courses/${courseId}/grade-structure/chapters/new`}
+            actionLabel="เพิ่มบท"
+          />
         ) : (
           <>
             {/* มือถือ: card-list — จอใหญ่ขึ้นไปใช้ตารางแทน (sm:hidden / hidden sm:block) */}

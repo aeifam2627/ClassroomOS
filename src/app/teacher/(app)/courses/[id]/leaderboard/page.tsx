@@ -1,9 +1,10 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
-import { Award, Medal, Trophy } from "lucide-react";
+import { Award, Medal, Trophy, Users } from "lucide-react";
 import { createClient } from "@/lib/supabase/server";
 import { StudentAvatar } from "@/components/student-avatar";
 import { SuccessPopup } from "@/components/success-popup";
+import { EmptyState } from "@/components/empty-state";
 import { formatStudentFullName } from "@/lib/student-name";
 import { getCourseLeaderboard } from "@/lib/leaderboard";
 import { awardPoints } from "./actions";
@@ -95,9 +96,13 @@ export default async function TeacherLeaderboardPage({
         </div>
 
         {(leaderboard?.entries.length ?? 0) === 0 ? (
-          <p className="px-5 py-10 text-center text-sm text-[var(--muted)]">
-            วิชานี้ยังไม่มีนักเรียน
-          </p>
+          <EmptyState
+            icon={Users}
+            title="วิชานี้ยังไม่มีนักเรียน"
+            description="เพิ่มนักเรียนเข้าวิชานี้เพื่อเริ่มเห็นอันดับ"
+            actionHref={`/teacher/courses/${courseId}/students/new`}
+            actionLabel="ไปเพิ่มนักเรียน"
+          />
         ) : (
           <div className="divide-y divide-[var(--border)]">
             {leaderboard?.entries.map((entry) => (

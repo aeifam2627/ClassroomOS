@@ -1,5 +1,4 @@
-import Link from "next/link";
-import { Download, LineChart, TrendingDown, TrendingUp, Users } from "lucide-react";
+import { BookCopy, Download, LineChart, TrendingDown, TrendingUp, Users } from "lucide-react";
 import { createClient } from "@/lib/supabase/server";
 import { getCourseReportData } from "@/lib/report-data";
 import { CourseSelect } from "@/components/course-select";
@@ -8,6 +7,7 @@ import { ReportLineChart } from "@/components/report-line-chart";
 import { Pagination } from "@/components/pagination";
 import { PrintButton } from "@/components/print-button";
 import { StudentAvatar } from "@/components/student-avatar";
+import { EmptyState } from "@/components/empty-state";
 import { formatStudentFullName } from "@/lib/student-name";
 
 const PAGE_SIZE = 10;
@@ -31,13 +31,15 @@ export default async function ReportsPage({
       <div>
         <h1 className="mb-1 text-2xl font-bold text-[var(--primary-dark)]">รายงานและสถิติ</h1>
         <p className="mb-6 text-sm text-[var(--muted)]">ภาพรวมผลการเรียนของนักเรียนในแต่ละวิชา</p>
-        <p className="rounded-2xl border border-dashed border-[var(--border)] bg-white py-10 text-center text-sm text-[var(--muted)]">
-          ยังไม่มีรายวิชา —{" "}
-          <Link href="/teacher/courses/new" className="text-[var(--primary)] underline">
-            สร้างวิชาใหม่
-          </Link>{" "}
-          ก่อนดูรายงาน
-        </p>
+        <div className="rounded-2xl border border-[var(--border)] bg-white">
+          <EmptyState
+            icon={BookCopy}
+            title="ยังไม่มีรายวิชา"
+            description="สร้างรายวิชาและกรอกคะแนนนักเรียนก่อน จึงจะมีข้อมูลให้ดูรายงานและสถิติ"
+            actionHref="/teacher/courses/new"
+            actionLabel="สร้างวิชาใหม่"
+          />
+        </div>
       </div>
     );
   }
@@ -151,7 +153,13 @@ export default async function ReportsPage({
           อันดับคะแนนนักเรียนในวิชา
         </p>
         {report.ranked.length === 0 ? (
-          <p className="px-4 py-10 text-center text-sm text-[var(--muted)]">วิชานี้ยังไม่มีนักเรียน</p>
+          <EmptyState
+            icon={Users}
+            title="วิชานี้ยังไม่มีนักเรียน"
+            description="เพิ่มนักเรียนเข้าวิชานี้เพื่อเริ่มเห็นรายงานและสถิติ"
+            actionHref={`/teacher/courses/${courseId}/students/new`}
+            actionLabel="ไปเพิ่มนักเรียน"
+          />
         ) : (
           <>
             <div className="divide-y divide-[var(--border)] sm:hidden print:hidden">

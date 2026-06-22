@@ -1,9 +1,10 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
-import { CalendarCheck } from "lucide-react";
+import { CalendarCheck, Users } from "lucide-react";
 import { createClient } from "@/lib/supabase/server";
 import { StudentAvatar } from "@/components/student-avatar";
 import { SuccessPopup } from "@/components/success-popup";
+import { EmptyState } from "@/components/empty-state";
 import { formatStudentFullName } from "@/lib/student-name";
 import {
   attendanceStatusLabel,
@@ -146,9 +147,13 @@ export default async function AttendancePage({
         </div>
 
         {students.length === 0 ? (
-          <p className="px-4 py-10 text-center text-sm text-[var(--muted)]">
-            วิชานี้ยังไม่มีนักเรียน ไปเพิ่มนักเรียนก่อนเช็คชื่อ
-          </p>
+          <EmptyState
+            icon={Users}
+            title="วิชานี้ยังไม่มีนักเรียน"
+            description="เพิ่มนักเรียนเข้าวิชานี้ก่อน จึงจะเริ่มเช็คชื่อได้"
+            actionHref={`/teacher/courses/${courseId}/students/new`}
+            actionLabel="ไปเพิ่มนักเรียน"
+          />
         ) : (
           <form action={saveAttendance} className="divide-y divide-[var(--border)]">
             <input type="hidden" name="courseId" value={courseId} />

@@ -30,7 +30,7 @@ export default async function ResetPasswordPage({
             ตั้งรหัสผ่านใหม่
           </h1>
           <p className="mt-2 text-center text-sm text-[var(--muted)]">
-            กรอกรหัส OTP 6 หลักที่ส่งไปทางอีเมล พร้อมตั้งรหัสผ่านใหม่
+            กรอกรหัส OTP ที่ส่งไปทางอีเมล พร้อมตั้งรหัสผ่านใหม่
           </p>
 
           {error && (
@@ -53,9 +53,9 @@ export default async function ResetPasswordPage({
               type="text"
               name="otp"
               inputMode="numeric"
-              maxLength={6}
+              maxLength={10}
               required
-              placeholder="รหัส OTP 6 หลัก"
+              placeholder="รหัส OTP"
             />
             <PasswordInput icon={<Lock />} name="password" required placeholder="รหัสผ่านใหม่" />
             <PasswordInput

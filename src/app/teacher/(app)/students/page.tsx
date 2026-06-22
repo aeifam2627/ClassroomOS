@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { Pencil, Plus, Upload } from "lucide-react";
+import { Pencil, Plus, Upload, Users } from "lucide-react";
 import { createClient } from "@/lib/supabase/server";
 import { ConfirmDeleteButton } from "@/components/confirm-delete-button";
 import { ResetPinButton } from "@/components/reset-pin-button";
@@ -7,6 +7,7 @@ import { PillRemoveButton } from "@/components/pill-remove-button";
 import { CopyableSecret } from "@/components/copyable-secret";
 import { SearchBox } from "@/components/search-box";
 import { Pagination } from "@/components/pagination";
+import { EmptyState } from "@/components/empty-state";
 import { StudentAvatar } from "@/components/student-avatar";
 import { formatStudentFullName } from "@/lib/student-name";
 import {
@@ -169,9 +170,19 @@ export default async function StudentsPage({
         </div>
 
         {rows.length === 0 ? (
-          <p className="px-4 py-10 text-center text-sm text-[var(--muted)]">
-            {safeQ ? "ไม่พบนักเรียนที่ค้นหา" : "ยังไม่มีนักเรียน กดปุ่ม “เพิ่มนักเรียนใหม่” เพื่อเริ่มต้น"}
-          </p>
+          safeQ ? (
+            <p className="px-4 py-10 text-center text-sm text-[var(--muted)]">
+              ไม่พบนักเรียนที่ค้นหา
+            </p>
+          ) : (
+            <EmptyState
+              icon={Users}
+              title="ยังไม่มีนักเรียน"
+              description="เพิ่มนักเรียนทีละคน หรือนำเข้าจาก Excel ทั้งห้องในครั้งเดียว แล้วค่อยลงทะเบียนเข้ารายวิชาทีหลังได้"
+              actionHref="/teacher/students/new"
+              actionLabel="เพิ่มนักเรียนใหม่"
+            />
+          )
         ) : (
           <>
             {/* มือถือ: card-list — จอใหญ่ขึ้นไปใช้ตารางแทน */}

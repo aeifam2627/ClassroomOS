@@ -33,7 +33,7 @@ export default async function ForgotPasswordPage({
             ลืมรหัสผ่าน
           </h1>
           <p className="mt-2 text-center text-sm text-[var(--muted)]">
-            กรอกอีเมลที่ใช้สมัครสมาชิก เราจะส่งรหัส OTP 6 หลักสำหรับตั้งรหัสผ่านใหม่ให้
+            กรอกอีเมลที่ใช้สมัครสมาชิก เราจะส่งรหัส OTP สำหรับตั้งรหัสผ่านใหม่ให้
           </p>
 
           {error && (

@@ -16,6 +16,7 @@ import {
   courseStatusLabel,
   type CourseStatus,
 } from "@/lib/course-status";
+import { EmptyState } from "@/components/empty-state";
 
 const SUBJECT_THEMES = [
   { match: /คณิต/, icon: Calculator, color: "blue" as const },
@@ -181,11 +182,14 @@ export default async function TeacherDashboardPage() {
       </div>
 
       {visibleCourses.length === 0 ? (
-        <div className="rounded-2xl border border-[var(--border)] bg-white p-10 text-center text-[var(--muted)]">
-          ยังไม่มีรายวิชา{" "}
-          <Link href="/teacher/courses/new" className="font-medium text-[var(--primary)] hover:underline">
-            เพิ่มรายวิชาใหม่
-          </Link>
+        <div className="rounded-2xl border border-[var(--border)] bg-white">
+          <EmptyState
+            icon={BookCopy}
+            title="ยังไม่มีรายวิชา"
+            description="สร้างรายวิชาแรกเพื่อเริ่มตั้งโครงสร้างคะแนนและจัดการนักเรียน"
+            actionHref="/teacher/courses/new"
+            actionLabel="เพิ่มรายวิชาใหม่"
+          />
         </div>
       ) : (
         <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">

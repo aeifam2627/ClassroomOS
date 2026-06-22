@@ -1,9 +1,10 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
-import { BookOpen, CheckCircle2, Pencil, Plus } from "lucide-react";
+import { BookOpen, CheckCircle2, Layers, Pencil, Plus, Scale } from "lucide-react";
 import { createClient } from "@/lib/supabase/server";
 import { CardActionsMenu } from "@/components/card-actions-menu";
 import { SuccessPopup } from "@/components/success-popup";
+import { EmptyState } from "@/components/empty-state";
 import { WeightDonutChart } from "@/components/weight-donut-chart";
 import { categoryColor } from "@/lib/category-color";
 import { CATEGORY_ICONS } from "@/lib/category-icons";
@@ -137,9 +138,16 @@ export default async function GradeStructurePage({
             })}
 
             {(categories?.length ?? 0) === 0 && (
-              <p className="col-span-4 py-6 text-center text-sm text-[var(--muted)]">
-                ยังไม่มีหมวดหมู่คะแนน กดปุ่ม “เพิ่มหมวดหมู่” เพื่อเริ่มต้น
-              </p>
+              <div className="col-span-2 sm:col-span-4">
+                <EmptyState
+                  icon={Layers}
+                  title="ยังไม่มีหมวดหมู่คะแนน"
+                  description="แบ่งคะแนนเป็นหมวดหมู่ เช่น สอบกลางภาค, งานเก็บคะแนน แล้วกำหนดน้ำหนัก % ให้รวมกันครบ 100"
+                  actionHref={`/teacher/courses/${courseId}/grade-structure/categories/new`}
+                  actionLabel="เพิ่มหมวดหมู่"
+                  compact
+                />
+              </div>
             )}
           </div>
 
@@ -194,9 +202,14 @@ export default async function GradeStructurePage({
         </div>
 
         {scales.length === 0 ? (
-          <p className="px-4 py-10 text-center text-sm text-[var(--muted)]">
-            ยังไม่มีเกณฑ์การให้คะแนน กดไอคอนแก้ไขเพื่อเริ่มต้น
-          </p>
+          <EmptyState
+            icon={Scale}
+            title="ยังไม่มีเกณฑ์การให้คะแนน"
+            description="กำหนดช่วงคะแนนกับระดับเกรด (เช่น A, B, C) หรือใช้เกณฑ์มาตรฐาน สพฐ. ที่มีให้สำเร็จรูป"
+            actionHref={`/teacher/courses/${courseId}/grade-structure/scales`}
+            actionLabel="ไปตั้งเกณฑ์การให้คะแนน"
+            compact
+          />
         ) : (
           <>
             <div className="divide-y divide-[var(--border)] sm:hidden">

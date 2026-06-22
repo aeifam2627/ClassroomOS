@@ -1,6 +1,6 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
-import { FileSpreadsheet, KeyRound, Plus, QrCode, Trash2, Upload } from "lucide-react";
+import { FileSpreadsheet, KeyRound, Plus, QrCode, Trash2, Upload, Users } from "lucide-react";
 import { createClient } from "@/lib/supabase/server";
 import { ConfirmDeleteButton } from "@/components/confirm-delete-button";
 import { ConfirmSubmitButton } from "@/components/confirm-submit-button";
@@ -12,6 +12,7 @@ import { SuccessPopup } from "@/components/success-popup";
 import { SearchBox } from "@/components/search-box";
 import { Pagination } from "@/components/pagination";
 import { StudentAvatar } from "@/components/student-avatar";
+import { EmptyState } from "@/components/empty-state";
 import { formatStudentFullName } from "@/lib/student-name";
 import {
   removeStudentFromCourse,
@@ -280,9 +281,19 @@ export default async function CourseStudentsPage({
         </div>
 
         {students.length === 0 ? (
-          <p className="px-4 py-10 text-center text-sm text-[var(--muted)]">
-            {q ? "ไม่พบนักเรียนที่ค้นหา" : "ยังไม่มีนักเรียนในวิชานี้ กดปุ่ม “เพิ่มนักเรียน” เพื่อเริ่มต้น"}
-          </p>
+          q ? (
+            <p className="px-4 py-10 text-center text-sm text-[var(--muted)]">
+              ไม่พบนักเรียนที่ค้นหา
+            </p>
+          ) : (
+            <EmptyState
+              icon={Users}
+              title="ยังไม่มีนักเรียนในวิชานี้"
+              description="เพิ่มนักเรียนทีละคน หรือนำเข้าจาก Excel ทั้งห้องในครั้งเดียว — เมื่อมีนักเรียนแล้วจะสร้าง QR Code ให้สแกนเข้าดูคะแนนได้ทันที"
+              actionHref={`/teacher/courses/${courseId}/students/new`}
+              actionLabel="เพิ่มนักเรียน"
+            />
+          )
         ) : (
           <>
             <div className="divide-y divide-[var(--border)] sm:hidden">

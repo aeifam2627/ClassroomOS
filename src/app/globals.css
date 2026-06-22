@@ -1,0 +1,34 @@
+@import "tailwindcss";
+
+html {
+  /* เพิ่มขนาดตัวหนังสือ+ไอคอนทั้งระบบ (ไอคอน lucide-react ใช้ h-4/w-4 ที่เป็น rem จึงขยายตามไปด้วย) */
+  font-size: 118.75%;
+}
+
+:root {
+  --background: #ffffff;
+  --foreground: #1e293b;
+  --muted: #64748b;
+  --primary: #2563eb;
+  --primary-dark: #0f1e3d;
+  --border: #e2e8f0;
+  --radius: 0.75rem;
+}
+
+@theme inline {
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --color-muted: var(--muted);
+  --color-primary: var(--primary);
+  --color-primary-dark: var(--primary-dark);
+  --color-border: var(--border);
+  --font-sans: var(--font-noto-sans-thai);
+  --font-heading: var(--font-noto-sans-thai);
+  --radius-lg: var(--radius);
+}
+
+body {
+  background: var(--background);
+  color: var(--foreground);
+  font-family: var(--font-sans), sans-serif;
+}

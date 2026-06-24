@@ -18,7 +18,7 @@ export default async function EditCoursePage({
   const { data: course } = await supabase
     .from("courses")
     .select(
-      "id, code, name, term, academic_year, status, gamification_enabled, leaderboard_score_basis, leaderboard_visibility",
+      "id, code, name, term, academic_year, status, section, gamification_enabled, leaderboard_score_basis, leaderboard_visibility",
     )
     .eq("id", id)
     .single();
@@ -45,6 +45,13 @@ export default async function EditCoursePage({
         <input type="hidden" name="courseId" value={course.id} />
         <FormField label="รหัสวิชา" name="code" defaultValue={course.code} />
         <FormField label="ชื่อวิชา" name="name" defaultValue={course.name} />
+        <FormField
+          label="ห้อง (ถ้ามี)"
+          name="section"
+          defaultValue={course.section}
+          placeholder="เช่น 1/1"
+          required={false}
+        />
         <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
           <FormField label="ภาคเรียน" name="term" defaultValue={course.term} />
           <FormField label="ปีการศึกษา" name="academicYear" defaultValue={course.academic_year} />

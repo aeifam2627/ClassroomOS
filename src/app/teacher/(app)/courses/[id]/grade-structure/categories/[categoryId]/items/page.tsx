@@ -1,10 +1,11 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
-import { ClipboardList, Pencil, Plus } from "lucide-react";
+import { CalendarClock, ClipboardList, Pencil, Plus } from "lucide-react";
 import { createClient } from "@/lib/supabase/server";
 import { ConfirmDeleteButton } from "@/components/confirm-delete-button";
 import { SuccessPopup } from "@/components/success-popup";
 import { EmptyState } from "@/components/empty-state";
+import { formatThaiDateTime } from "@/lib/due-date";
 import { deleteGradeItem } from "../../../actions";
 
 export default async function GradeItemsPage({
@@ -29,11 +30,18 @@ export default async function GradeItemsPage({
 
   const { data: items } = await supabase
     .from("grade_items")
-    .select("id, title, description, max_score, chapters(name)")
+    .select("id, title, description, max_score, due_at, chapters(name)")
     .eq("category_id", categoryId)
     .order("created_at", { ascending: true })
     .returns<
-      { id: string; title: string; description: string; max_score: number; chapters: { name: string } | null }[]
+      {
+        id: string;
+        title: string;
+        description: string;
+        max_score: number;
+        due_at: string | null;
+        chapters: { name: string } | null;
+      }[]
     >();
 
   return (
@@ -88,6 +96,12 @@ export default async function GradeItemsPage({
                     <p className="mt-1 text-xs text-[var(--muted)]">
                       บท: {item.chapters?.name ?? "-"} · คะแนนเต็ม {item.max_score}
                     </p>
+                    {item.due_at && (
+                      <p className="mt-1 flex items-center gap-1 text-xs text-amber-700">
+                        <CalendarClock className="h-3 w-3" />
+                        กำหนดส่ง {formatThaiDateTime(item.due_at)}
+                      </p>
+                    )}
                   </div>
                   <div className="flex shrink-0 items-center gap-3">
                     <Link
@@ -124,6 +138,12 @@ export default async function GradeItemsPage({
                         <p className="font-medium text-[var(--foreground)]">{item.title}</p>
                         {item.description && (
                           <p className="mt-0.5 text-xs text-[var(--muted)]">{item.description}</p>
+                        )}
+                        {item.due_at && (
+                          <p className="mt-1 flex items-center gap-1 text-xs text-amber-700">
+                            <CalendarClock className="h-3 w-3" />
+                            กำหนดส่ง {formatThaiDateTime(item.due_at)}
+                          </p>
                         )}
                       </td>
                       <td className="px-4 py-3 text-[var(--muted)]">{item.chapters?.name ?? "-"}</td>

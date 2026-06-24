@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { BarChart3, BookOpen, LayoutDashboard, LogOut, Settings, Users, X } from "lucide-react";
+import { BarChart3, BookOpen, LayoutDashboard, LogOut, Settings, Trophy, Users, X } from "lucide-react";
 import type { LucideIcon } from "lucide-react";
 import { Logo } from "@/components/logo";
 import { useSidebar } from "@/components/sidebar-context";
@@ -18,6 +18,7 @@ const navItems: NavItem[] = [
   { label: "หน้าหลัก", href: "/teacher/dashboard", icon: LayoutDashboard },
   { label: "จัดการรายวิชา", href: "/teacher/courses", icon: BookOpen },
   { label: "นักเรียน", href: "/teacher/students", icon: Users },
+  { label: "Leaderboard", href: "/teacher/leaderboard", icon: Trophy },
   { label: "รายงาน", href: "/teacher/reports", icon: BarChart3 },
   { label: "ตั้งค่า", href: "/teacher/settings", icon: Settings },
 ];

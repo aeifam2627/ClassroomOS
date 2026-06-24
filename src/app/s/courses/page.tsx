@@ -3,7 +3,7 @@ import { redirect } from "next/navigation";
 import Link from "next/link";
 import { BookOpen, ChevronRight, Inbox } from "lucide-react";
 import { STUDENT_SESSION_COOKIE, verifySessionToken } from "@/lib/student-session";
-import { getStudentCourses } from "@/lib/student-score-view";
+import { getStudentCourses, getStudentPendingSubmissionCounts } from "@/lib/student-score-view";
 import { EmptyState } from "@/components/empty-state";
 
 export default async function StudentCoursesPage() {
@@ -15,7 +15,10 @@ export default async function StudentCoursesPage() {
     redirect("/s");
   }
 
-  const courses = await getStudentCourses(session.studentId);
+  const [courses, pendingCounts] = await Promise.all([
+    getStudentCourses(session.studentId),
+    getStudentPendingSubmissionCounts(session.studentId),
+  ]);
 
   return (
     <div>
@@ -25,24 +28,38 @@ export default async function StudentCoursesPage() {
       </div>
 
       <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3">
-        {courses.map((course) => (
-          <Link
-            key={course.id}
-            href={`/s/${course.id}`}
-            className="flex items-center gap-3 rounded-2xl border border-[var(--border)] bg-white p-4 transition-colors hover:border-[var(--primary)]"
-          >
-            <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-[var(--primary)]/10 text-[var(--primary)]">
-              <BookOpen className="h-5 w-5" />
-            </span>
-            <div className="flex-1">
-              <p className="text-sm font-semibold text-[var(--foreground)]">{course.name}</p>
-              <p className="text-xs text-[var(--muted)]">
-                {course.code} · ภาคเรียนที่ {course.term}/{course.academic_year}
-              </p>
-            </div>
-            <ChevronRight className="h-4 w-4 shrink-0 text-[var(--muted)]" />
-          </Link>
-        ))}
+        {courses.map((course) => {
+          const pending = pendingCounts[course.id] ?? 0;
+
+          return (
+            <Link
+              key={course.id}
+              href={`/s/${course.id}`}
+              className="flex items-center gap-3 rounded-2xl border border-[var(--border)] bg-white p-4 transition-colors hover:border-[var(--primary)]"
+            >
+              <span className="relative flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-[var(--primary)]/10 text-[var(--primary)]">
+                <BookOpen className="h-5 w-5" />
+                {pending > 0 && (
+                  <span className="absolute -right-1 -top-1 flex h-5 min-w-5 items-center justify-center rounded-full bg-red-500 px-1 text-[10px] font-bold text-white">
+                    {pending > 9 ? "9+" : pending}
+                  </span>
+                )}
+              </span>
+              <div className="flex-1">
+                <p className="text-sm font-semibold text-[var(--foreground)]">{course.name}</p>
+                <p className="text-xs text-[var(--muted)]">
+                  {course.code} · ภาคเรียนที่ {course.term}/{course.academic_year}
+                </p>
+                {pending > 0 && (
+                  <p className="mt-0.5 text-xs font-medium text-red-600">
+                    มีงานยังไม่ส่ง {pending} ชิ้น
+                  </p>
+                )}
+              </div>
+              <ChevronRight className="h-4 w-4 shrink-0 text-[var(--muted)]" />
+            </Link>
+          );
+        })}
 
         {courses.length === 0 && (
           <div className="col-span-full rounded-2xl border border-[var(--border)] bg-white">

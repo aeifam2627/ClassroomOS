@@ -6,10 +6,17 @@ import { FormField } from "@/components/form-field";
 import { FormTextarea } from "@/components/form-textarea";
 import { FormSelect } from "@/components/form-select";
 
-type Row = { key: string; title: string; description: string; maxScore: string; chapterId: string };
+type Row = {
+  key: string;
+  title: string;
+  description: string;
+  maxScore: string;
+  chapterId: string;
+  dueAt: string;
+};
 
 function newRow(key: string): Row {
-  return { key, title: "", description: "", maxScore: "", chapterId: "" };
+  return { key, title: "", description: "", maxScore: "", chapterId: "", dueAt: "" };
 }
 
 export function MultiGradeItemForm({
@@ -96,6 +103,16 @@ export function MultiGradeItemForm({
                 onChange={(e) => updateRow(row.key, "chapterId", e.target.value)}
               />
             )}
+            <label className="flex flex-col gap-1 text-sm">
+              วันกำหนดส่ง (ไม่บังคับ)
+              <input
+                type="datetime-local"
+                name={`dueAt-${row.key}`}
+                value={row.dueAt}
+                onChange={(e) => updateRow(row.key, "dueAt", e.target.value)}
+                className="rounded-[var(--radius)] border border-[var(--border)] bg-white px-4 py-2.5 text-sm outline-none focus:border-[var(--primary)] focus:ring-2 focus:ring-[var(--primary)]/20"
+              />
+            </label>
           </div>
         </div>
       ))}

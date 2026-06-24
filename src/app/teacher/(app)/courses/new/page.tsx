@@ -26,6 +26,7 @@ export default async function NewCoursePage({
       >
         <FormField label="รหัสวิชา" name="code" placeholder="เช่น SC101" />
         <FormField label="ชื่อวิชา" name="name" placeholder="เช่น วิทยาการคำนวณ 1" />
+        <FormField label="ห้อง (ถ้ามี)" name="section" placeholder="เช่น 1/1" required={false} />
         <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
           <FormField label="ภาคเรียน" name="term" placeholder="เช่น 1" />
           <FormField label="ปีการศึกษา" name="academicYear" placeholder="เช่น 2567" />

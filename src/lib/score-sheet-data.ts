@@ -28,7 +28,7 @@ export async function getScoreSheetData(courseId: string) {
     categoryIds.length > 0
       ? await supabase
           .from("grade_items")
-          .select("id, title, description, max_score, category_id, chapter_id")
+          .select("id, title, description, max_score, category_id, chapter_id, due_at")
           .in("category_id", categoryIds)
           .order("created_at", { ascending: true })
       : {
@@ -39,6 +39,7 @@ export async function getScoreSheetData(courseId: string) {
             max_score: number;
             category_id: string;
             chapter_id: string | null;
+            due_at: string | null;
           }[],
           error: null,
         };
@@ -101,5 +102,33 @@ export async function getScoreSheetData(courseId: string) {
 
   const chapters = chaptersRaw ?? [];
 
-  return { course, allCategories, allItems, students, initialScores, scales, chapters };
+  const { data: submissionsRaw } =
+    itemIds.length > 0
+      ? await supabase
+          .from("assignment_submissions")
+          .select("id, grade_item_id, student_id, file_name, submitted_at")
+          .in("grade_item_id", itemIds)
+      : {
+          data: [] as {
+            id: string;
+            grade_item_id: string;
+            student_id: string;
+            file_name: string;
+            submitted_at: string;
+          }[],
+        };
+
+  const submissions: Record<
+    string,
+    { id: string; fileName: string; submittedAt: string }
+  > = {};
+  for (const row of submissionsRaw ?? []) {
+    submissions[`${row.student_id}:${row.grade_item_id}`] = {
+      id: row.id,
+      fileName: row.file_name,
+      submittedAt: row.submitted_at,
+    };
+  }
+
+  return { course, allCategories, allItems, students, initialScores, scales, chapters, submissions };
 }

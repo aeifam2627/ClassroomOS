@@ -7,7 +7,7 @@ export type StudentCategoryView = {
   id: string;
   name: string;
   weight_percent: number;
-  grade_items: { id: string; title: string; description: string; max_score: number }[];
+  grade_items: { id: string; title: string; description: string; max_score: number; due_at: string | null }[];
 };
 
 export type StudentScoreView = {
@@ -127,10 +127,19 @@ export async function getStudentScoreView(
     categoryIds.length > 0
       ? await supabase
           .from("grade_items")
-          .select("id, title, description, max_score, category_id")
+          .select("id, title, description, max_score, category_id, due_at")
           .in("category_id", categoryIds)
           .order("created_at", { ascending: true })
-      : { data: [] as { id: string; title: string; description: string; max_score: number; category_id: string }[] };
+      : {
+          data: [] as {
+            id: string;
+            title: string;
+            description: string;
+            max_score: number;
+            category_id: string;
+            due_at: string | null;
+          }[],
+        };
 
   const allItems = itemsRaw ?? [];
 
@@ -176,6 +185,97 @@ export async function getStudentScoreView(
   const grade = findGrade(scales, total);
 
   return { course, student, categories, scoreOf, statusOf, total, grade, lastUpdatedAt };
+}
+
+// นับจำนวนชิ้นงานที่ "มีกำหนดส่ง" และนักเรียนคนนี้ยังไม่ส่ง แยกตามวิชา ใช้แสดง badge แจ้งเตือนที่การ์ดวิชาในหน้า /s/courses
+// นับเฉพาะชิ้นงานที่ครูตั้ง due_at ไว้เท่านั้น (ไม่รวมชิ้นงานทั่วไปที่ยังไม่มีคะแนนแต่ไม่ต้องส่งไฟล์ — คนละความหมายกับ "ยังไม่ตรวจ")
+export async function getStudentPendingSubmissionCounts(
+  studentId: string,
+): Promise<Record<string, number>> {
+  const supabase = createServiceClient();
+
+  const { data: enrollments } = await supabase
+    .from("course_students")
+    .select("course_id")
+    .eq("student_id", studentId);
+
+  const courseIds = (enrollments ?? []).map((e) => e.course_id);
+  if (courseIds.length === 0) return {};
+
+  const { data: categoriesRaw } = await supabase
+    .from("score_categories")
+    .select("id, course_id")
+    .in("course_id", courseIds);
+
+  const courseIdOfCategory = new Map((categoriesRaw ?? []).map((c) => [c.id, c.course_id]));
+  const categoryIds = [...courseIdOfCategory.keys()];
+  if (categoryIds.length === 0) return {};
+
+  const { data: itemsRaw } = await supabase
+    .from("grade_items")
+    .select("id, category_id")
+    .in("category_id", categoryIds)
+    .not("due_at", "is", null);
+
+  const courseIdOfItem = new Map(
+    (itemsRaw ?? []).map((i) => [i.id, courseIdOfCategory.get(i.category_id)!]),
+  );
+  const itemIds = [...courseIdOfItem.keys()];
+  if (itemIds.length === 0) return {};
+
+  const { data: submissionsRaw } = await supabase
+    .from("assignment_submissions")
+    .select("grade_item_id")
+    .eq("student_id", studentId)
+    .in("grade_item_id", itemIds);
+
+  const submittedItemIds = new Set((submissionsRaw ?? []).map((s) => s.grade_item_id));
+
+  const counts: Record<string, number> = {};
+  for (const [itemId, courseId] of courseIdOfItem) {
+    if (submittedItemIds.has(itemId)) continue;
+    counts[courseId] = (counts[courseId] ?? 0) + 1;
+  }
+  return counts;
+}
+
+export type StudentSubmissionInfo = { fileName: string; submittedAt: string };
+
+// ดึงสถานะการส่งงานของนักเรียนคนเดียวทุกชิ้นงานในวิชาเดียว (key = grade_item_id) ใช้ service client
+// ด้วยเหตุผลเดียวกับ getStudentScoreView (นักเรียนไม่มี auth.uid() ให้ RLS เช็ค)
+export async function getStudentSubmissions(
+  courseId: string,
+  studentId: string,
+): Promise<Record<string, StudentSubmissionInfo>> {
+  const supabase = createServiceClient();
+
+  const { data: categoriesRaw } = await supabase
+    .from("score_categories")
+    .select("id")
+    .eq("course_id", courseId);
+
+  const categoryIds = (categoriesRaw ?? []).map((c) => c.id);
+  if (categoryIds.length === 0) return {};
+
+  const { data: itemsRaw } = await supabase
+    .from("grade_items")
+    .select("id")
+    .in("category_id", categoryIds);
+
+  const itemIds = (itemsRaw ?? []).map((i) => i.id);
+  if (itemIds.length === 0) return {};
+
+  const { data: submissionsRaw } = await supabase
+    .from("assignment_submissions")
+    .select("grade_item_id, file_name, submitted_at")
+    .eq("student_id", studentId)
+    .in("grade_item_id", itemIds);
+
+  const submissionOf: Record<string, StudentSubmissionInfo> = {};
+  for (const row of submissionsRaw ?? []) {
+    submissionOf[row.grade_item_id] = { fileName: row.file_name, submittedAt: row.submitted_at };
+  }
+  return submissionOf;
 }
 
 export type StudentAttendanceSummary = Record<AttendanceStatus, number>;

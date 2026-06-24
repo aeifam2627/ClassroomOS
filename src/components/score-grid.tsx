@@ -3,10 +3,12 @@
 import { useState, useTransition } from "react";
 import { CheckCircle2, Info, Loader2 } from "lucide-react";
 import { StudentAvatar } from "@/components/student-avatar";
+import { SubmissionBadge } from "@/components/submission-badge";
 import { formatStudentFullName } from "@/lib/student-name";
 import { gradeBadgeClass } from "@/lib/grade-color";
 import { computeStudentTotal, findGrade, type CategoryWithItems } from "@/lib/score-calculation";
 import type { GradingScaleWithRange } from "@/lib/grading-scale";
+import { isLateSubmission } from "@/lib/assignment-submission";
 import { saveScore } from "@/app/teacher/(app)/courses/[id]/scores/actions";
 
 type ItemColumn = {
@@ -15,9 +17,11 @@ type ItemColumn = {
   description?: string;
   max_score: number;
   chapter_id?: string | null;
+  due_at?: string | null;
 };
 type StudentRow = { id: string; student_code: string; name: string; title: string };
 type ChapterGroup = { id: string; name: string; items: ItemColumn[] };
+type SubmissionInfo = { id: string; fileName: string; submittedAt: string };
 
 // จัดกลุ่มคอลัมน์ใบงานตามบท (ถ้ามีตั้งไว้) เพื่อทำหัวตาราง 2 ชั้น: บท > ใบงาน
 // ใบงานที่ไม่ได้ระบุบทถูกรวมไว้กลุ่ม "ไม่ระบุบท" ต่อท้าย — ถ้ามีแค่ 1 กลุ่มรวม ให้ถือว่าไม่ได้ใช้ฟีเจอร์บท
@@ -57,6 +61,8 @@ export function ScoreGrid({
   initialScores,
   scales,
   chapters,
+  submissions,
+  courseId,
 }: {
   visibleItems: ItemColumn[];
   allCategories: CategoryWithItems[];
@@ -64,6 +70,8 @@ export function ScoreGrid({
   initialScores: Record<string, number | null>;
   scales: GradingScaleWithRange[];
   chapters: { id: string; name: string }[];
+  submissions: Record<string, SubmissionInfo>;
+  courseId: string;
 }) {
   const [scores, setScores] = useState(initialScores);
   const [saveState, setSaveState] = useState<{
@@ -152,22 +160,35 @@ export function ScoreGrid({
                 {orderedItems.map((item) => {
                   const value = scoreOf(student.id, item.id);
                   const low = value !== null && value < item.max_score / 2;
+                  const submission = submissions[`${student.id}:${item.id}`];
                   return (
                     <div key={item.id} className="flex items-center justify-between gap-3 px-3 py-2">
                       <span className="text-sm text-[var(--muted)]">
                         {item.title} <span className="text-xs">({item.max_score})</span>
                       </span>
-                      <input
-                        type="number"
-                        min={0}
-                        max={item.max_score}
-                        step={0.01}
-                        defaultValue={value ?? ""}
-                        onBlur={(e) => handleCommit(student.id, item.id, e.target.value, item.max_score)}
-                        className={`w-16 shrink-0 rounded border px-2 py-1 text-center text-sm outline-none focus:border-[var(--primary)] ${
-                          low ? "border-red-200 bg-red-50" : "border-[var(--border)]"
-                        }`}
-                      />
+                      <div className="flex shrink-0 items-center gap-1.5">
+                        {submission && (
+                          <SubmissionBadge
+                            courseId={courseId}
+                            submissionId={submission.id}
+                            fileName={submission.fileName}
+                            late={isLateSubmission(submission.submittedAt, item.due_at ?? null)}
+                          />
+                        )}
+                        <input
+                          type="number"
+                          min={0}
+                          max={item.max_score}
+                          step={0.01}
+                          defaultValue={value ?? ""}
+                          onBlur={(e) =>
+                            handleCommit(student.id, item.id, e.target.value, item.max_score)
+                          }
+                          className={`w-16 shrink-0 rounded border px-2 py-1 text-center text-sm outline-none focus:border-[var(--primary)] ${
+                            low ? "border-red-200 bg-red-50" : "border-[var(--border)]"
+                          }`}
+                        />
+                      </div>
                     </div>
                   );
                 })}
@@ -267,24 +288,35 @@ export function ScoreGrid({
                   {orderedItems.map((item) => {
                     const value = scoreOf(student.id, item.id);
                     const low = value !== null && value < item.max_score / 2;
+                    const submission = submissions[`${student.id}:${item.id}`];
                     return (
                       <td
                         key={item.id}
                         className="border-l border-[var(--border)] p-1 text-center"
                       >
-                        <input
-                          type="number"
-                          min={0}
-                          max={item.max_score}
-                          step={0.01}
-                          defaultValue={value ?? ""}
-                          onBlur={(e) =>
-                            handleCommit(student.id, item.id, e.target.value, item.max_score)
-                          }
-                          className={`w-16 rounded border px-2 py-1 text-center text-sm outline-none focus:border-[var(--primary)] ${
-                            low ? "border-red-200 bg-red-50" : "border-transparent"
-                          }`}
-                        />
+                        <div className="flex items-center justify-center gap-1">
+                          <input
+                            type="number"
+                            min={0}
+                            max={item.max_score}
+                            step={0.01}
+                            defaultValue={value ?? ""}
+                            onBlur={(e) =>
+                              handleCommit(student.id, item.id, e.target.value, item.max_score)
+                            }
+                            className={`w-16 rounded border px-2 py-1 text-center text-sm outline-none focus:border-[var(--primary)] ${
+                              low ? "border-red-200 bg-red-50" : "border-transparent"
+                            }`}
+                          />
+                          {submission && (
+                            <SubmissionBadge
+                              courseId={courseId}
+                              submissionId={submission.id}
+                              fileName={submission.fileName}
+                              late={isLateSubmission(submission.submittedAt, item.due_at ?? null)}
+                            />
+                          )}
+                        </div>
                       </td>
                     );
                   })}

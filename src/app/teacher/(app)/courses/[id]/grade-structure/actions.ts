@@ -4,6 +4,7 @@ import { redirect } from "next/navigation";
 import { revalidatePath } from "next/cache";
 import { createClient } from "@/lib/supabase/server";
 import { STANDARD_GRADING_SCALE } from "@/lib/standard-grading-scale";
+import { parseDueAtInput } from "@/lib/due-date";
 
 function getRequiredField(formData: FormData, key: string): string {
   const value = formData.get(key);
@@ -165,6 +166,7 @@ export async function createGradeItems(formData: FormData) {
       description: (formData.get(`description-${key}`) as string | null) ?? "",
       maxScoreRaw: formData.get(`maxScore-${key}`) as string | null,
       chapterId: (formData.get(`chapter-${key}`) as string | null) || null,
+      dueAt: parseDueAtInput(formData.get(`dueAt-${key}`) as string | null),
     }))
     .filter((row) => row.title !== "");
 
@@ -191,6 +193,7 @@ export async function createGradeItems(formData: FormData) {
       description: r.description,
       max_score: Number(r.maxScoreRaw),
       chapter_id: r.chapterId,
+      due_at: r.dueAt,
     })),
   );
 
@@ -211,11 +214,12 @@ export async function updateGradeItem(formData: FormData) {
   const description = (formData.get("description") as string | null) ?? "";
   const chapterIdRaw = formData.get("chapterId") as string | null;
   const chapterId = chapterIdRaw && chapterIdRaw !== "" ? chapterIdRaw : null;
+  const dueAt = parseDueAtInput(formData.get("dueAt") as string | null);
 
   const supabase = await createClient();
   const { error } = await supabase
     .from("grade_items")
-    .update({ title, max_score: maxScore, description, chapter_id: chapterId })
+    .update({ title, max_score: maxScore, description, chapter_id: chapterId, due_at: dueAt })
     .eq("id", itemId);
 
   if (error) {

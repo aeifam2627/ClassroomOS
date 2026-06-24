@@ -1,14 +1,18 @@
 import { cookies } from "next/headers";
+import Image from "next/image";
 import Link from "next/link";
-import { Backpack, CalendarCheck, ClipboardList, GraduationCap, Trophy } from "lucide-react";
+import { Backpack, CalendarCheck, ClipboardList, GraduationCap, Medal, Paperclip, Sparkles, Trophy } from "lucide-react";
 import { STUDENT_SESSION_COOKIE, verifySessionToken } from "@/lib/student-session";
 import {
   getStudentAttendanceSummary,
   getStudentLoginContext,
   getStudentScoreView,
+  getStudentSubmissions,
   type StudentAttendanceSummary,
+  type StudentSubmissionInfo,
 } from "@/lib/student-score-view";
 import { attendanceStatusLabel } from "@/lib/attendance-status";
+import { isLateSubmission } from "@/lib/assignment-submission";
 import { gradeRingHex } from "@/lib/grade-color";
 import { categoryColor } from "@/lib/category-color";
 import { CATEGORY_ICONS } from "@/lib/category-icons";
@@ -17,6 +21,7 @@ import { StudentAvatar } from "@/components/student-avatar";
 import { StudentLoginCard } from "@/components/student-login-card";
 import { formatStudentFullName } from "@/lib/student-name";
 import { getCourseLeaderboard, studentAlias, type LeaderboardData } from "@/lib/leaderboard";
+import { getStudentAchievements, type StudentAchievement } from "@/lib/achievements";
 import { studentLogin } from "./actions";
 
 export default async function StudentPortalPage({
@@ -50,16 +55,21 @@ export default async function StudentPortalPage({
   if (session) {
     const view = await getStudentScoreView(courseId, session.studentId);
     if (view) {
-      const [leaderboard, attendance] = await Promise.all([
+      const [leaderboard, attendance, submissions, achievements] = await Promise.all([
         getCourseLeaderboard(courseId),
         getStudentAttendanceSummary(courseId, session.studentId),
+        getStudentSubmissions(courseId, session.studentId),
+        getStudentAchievements(courseId, session.studentId),
       ]);
       return (
         <StudentScoreCard
           view={view}
           leaderboard={leaderboard}
           attendance={attendance}
+          submissions={submissions}
+          achievements={achievements ?? []}
           studentId={session.studentId}
+          courseId={courseId}
         />
       );
     }
@@ -100,12 +110,18 @@ function StudentScoreCard({
   view,
   leaderboard,
   attendance,
+  submissions,
+  achievements,
   studentId,
+  courseId,
 }: {
   view: NonNullable<Awaited<ReturnType<typeof getStudentScoreView>>>;
   leaderboard: LeaderboardData | null;
   attendance: StudentAttendanceSummary;
+  submissions: Record<string, StudentSubmissionInfo>;
+  achievements: StudentAchievement[];
   studentId: string;
+  courseId: string;
 }) {
   const { course, student, categories, scoreOf, statusOf, total, grade, lastUpdatedAt } = view;
   const ringColor = gradeRingHex(grade?.gpa_value ?? null);
@@ -115,6 +131,7 @@ function StudentScoreCard({
   );
 
   const pendingCount = orderedItems.filter((item) => statusOf[item.id] !== "graded").length;
+  const unlockedAchievements = achievements.filter((a) => a.unlocked);
 
   return (
     <div>
@@ -139,15 +156,25 @@ function StudentScoreCard({
           </div>
         </div>
 
-        {leaderboard?.enabled && leaderboard.entries.length > 0 && (
-          <a
-            href="#leaderboard"
-            className="flex items-center gap-2 rounded-[var(--radius)] border border-amber-200 bg-amber-50 px-4 py-2.5 text-sm font-semibold text-amber-700 transition-colors hover:bg-amber-100"
+        <div className="flex flex-wrap items-center gap-2">
+          <Link
+            href={`/s/${courseId}/level`}
+            className="flex items-center gap-2 rounded-[var(--radius)] border border-[var(--primary)]/20 bg-[var(--primary)]/5 px-4 py-2.5 text-sm font-semibold text-[var(--primary)] transition-colors hover:bg-[var(--primary)]/10"
           >
-            <Trophy className="h-4 w-4" />
-            ดู Leaderboard
-          </a>
-        )}
+            <Sparkles className="h-4 w-4" />
+            ดูเลเวลของฉัน
+          </Link>
+
+          {leaderboard?.enabled && leaderboard.entries.length > 0 && (
+            <a
+              href="#leaderboard"
+              className="flex items-center gap-2 rounded-[var(--radius)] border border-amber-200 bg-amber-50 px-4 py-2.5 text-sm font-semibold text-amber-700 transition-colors hover:bg-amber-100"
+            >
+              <Trophy className="h-4 w-4" />
+              ดู Leaderboard
+            </a>
+          )}
+        </div>
       </div>
 
       <div className="rounded-2xl border border-[var(--border)] bg-white p-4 sm:p-6">
@@ -247,6 +274,8 @@ function StudentScoreCard({
                 const color = categoryColor(item.categoryIndex);
                 const value = scoreOf[item.id] ?? null;
                 const graded = statusOf[item.id] === "graded";
+                const submission = submissions[item.id];
+                const late = submission ? isLateSubmission(submission.submittedAt, item.due_at) : false;
 
                 return (
                   <div key={item.id} className="flex items-center justify-between gap-3 px-4 py-2.5">
@@ -265,6 +294,19 @@ function StudentScoreCard({
                       >
                         {graded ? "ตรวจแล้ว" : "รอตรวจ"}
                       </span>
+                      <Link
+                        href={`/s/${courseId}/items/${item.id}`}
+                        className={`flex items-center gap-1 rounded-full px-2.5 py-0.5 text-xs font-medium ${
+                          submission
+                            ? late
+                              ? "bg-red-100 text-red-700"
+                              : "bg-sky-100 text-sky-700"
+                            : "bg-slate-100 text-[var(--muted)]"
+                        }`}
+                      >
+                        <Paperclip className="h-3 w-3" />
+                        {submission ? (late ? "ส่งล่าช้า" : "ส่งแล้ว") : "ส่งงาน"}
+                      </Link>
                     </div>
                   </div>
                 );
@@ -279,6 +321,7 @@ function StudentScoreCard({
                     <th className="px-4 py-2 text-center font-medium">คะแนนที่ได้</th>
                     <th className="px-4 py-2 text-center font-medium">คะแนนเต็ม</th>
                     <th className="px-4 py-2 text-center font-medium">สถานะ</th>
+                    <th className="px-4 py-2 text-center font-medium">ส่งงาน</th>
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-[var(--border)]">
@@ -286,6 +329,10 @@ function StudentScoreCard({
                     const color = categoryColor(item.categoryIndex);
                     const value = scoreOf[item.id] ?? null;
                     const graded = statusOf[item.id] === "graded";
+                    const submission = submissions[item.id];
+                    const late = submission
+                      ? isLateSubmission(submission.submittedAt, item.due_at)
+                      : false;
 
                     return (
                       <tr key={item.id}>
@@ -310,6 +357,21 @@ function StudentScoreCard({
                             {graded ? "ตรวจแล้ว" : "รอตรวจ"}
                           </span>
                         </td>
+                        <td className="px-4 py-2.5 text-center">
+                          <Link
+                            href={`/s/${courseId}/items/${item.id}`}
+                            className={`inline-flex items-center gap-1 rounded-full px-2.5 py-0.5 text-xs font-medium ${
+                              submission
+                                ? late
+                                  ? "bg-red-100 text-red-700"
+                                  : "bg-sky-100 text-sky-700"
+                                : "bg-slate-100 text-[var(--muted)]"
+                            }`}
+                          >
+                            <Paperclip className="h-3 w-3" />
+                            {submission ? (late ? "ส่งล่าช้า" : "ส่งแล้ว") : "ส่งงาน"}
+                          </Link>
+                        </td>
                       </tr>
                     );
                   })}
@@ -329,6 +391,30 @@ function StudentScoreCard({
           </p>
         )}
       </div>
+
+      {unlockedAchievements.length > 0 && (
+        <div className="mt-6 rounded-2xl border border-[var(--border)] bg-white p-4 sm:p-6">
+          <p className="mb-4 flex items-center gap-2 text-sm font-semibold text-[var(--primary-dark)]">
+            <Medal className="h-4 w-4" />
+            เหรียญตราที่ได้รับ
+          </p>
+          <div className="flex flex-wrap gap-4">
+            {unlockedAchievements.map((achievement) => (
+              <div key={achievement.key} className="flex w-20 flex-col items-center text-center">
+                <Image
+                  src={achievement.image}
+                  alt={achievement.nameTh}
+                  title={achievement.descriptionTh}
+                  width={56}
+                  height={56}
+                  className="h-14 w-14 object-contain"
+                />
+                <p className="mt-1 text-xs font-medium text-[var(--foreground)]">{achievement.nameTh}</p>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
 
       {leaderboard?.enabled && leaderboard.entries.length > 0 && (
         <div id="leaderboard">

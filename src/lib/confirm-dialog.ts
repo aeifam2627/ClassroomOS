@@ -34,3 +34,19 @@ export async function notifySuccess(message: string, title = "สำเร็จ
     buttonsStyling: true,
   });
 }
+
+// popup แจ้งเตือนเฉยๆ (ไม่ต้องยืนยัน/ยกเลิก) ใช้กับเรื่องกำหนดส่งงาน — เกินกำหนดแล้ว (warning) หรือเวลาที่เหลือ (info)
+export async function notifyInfo(
+  message: string,
+  title: string,
+  icon: "info" | "warning" = "info",
+): Promise<void> {
+  await Swal.fire({
+    title,
+    text: message,
+    icon,
+    confirmButtonText: "ตกลง",
+    confirmButtonColor: "#2563eb",
+    buttonsStyling: true,
+  });
+}

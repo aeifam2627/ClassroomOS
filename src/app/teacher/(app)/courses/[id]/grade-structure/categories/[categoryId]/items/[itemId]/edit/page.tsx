@@ -4,6 +4,7 @@ import { FormField } from "@/components/form-field";
 import { FormTextarea } from "@/components/form-textarea";
 import { FormSelect } from "@/components/form-select";
 import { createClient } from "@/lib/supabase/server";
+import { toDueAtInputValue } from "@/lib/due-date";
 import { updateGradeItem } from "../../../../../actions";
 
 export default async function EditGradeItemPage({
@@ -19,7 +20,7 @@ export default async function EditGradeItemPage({
   const supabase = await createClient();
   const { data: item } = await supabase
     .from("grade_items")
-    .select("id, title, description, max_score, category_id, chapter_id")
+    .select("id, title, description, max_score, category_id, chapter_id, due_at")
     .eq("id", itemId)
     .single();
 
@@ -73,6 +74,15 @@ export default async function EditGradeItemPage({
             defaultValue={item.chapter_id ?? ""}
           />
         )}
+        <label className="flex flex-col gap-1 text-sm">
+          วันกำหนดส่ง (ไม่บังคับ)
+          <input
+            type="datetime-local"
+            name="dueAt"
+            defaultValue={toDueAtInputValue(item.due_at)}
+            className="rounded-[var(--radius)] border border-[var(--border)] bg-white px-4 py-2.5 text-sm outline-none focus:border-[var(--primary)] focus:ring-2 focus:ring-[var(--primary)]/20"
+          />
+        </label>
 
         <div className="mt-2 flex items-center gap-3">
           <button

@@ -17,7 +17,8 @@ export default async function ScoresPage({
   const data = await getScoreSheetData(courseId);
   if (!data) notFound();
 
-  const { course, allCategories, allItems, students, initialScores, scales, chapters } = data;
+  const { course, allCategories, allItems, students, initialScores, scales, chapters, submissions } =
+    data;
 
   const activeCategory = allCategories.find((c) => c.id === activeCategoryId);
   const visibleItems = activeCategory ? activeCategory.grade_items : allItems;
@@ -112,6 +113,8 @@ export default async function ScoresPage({
         initialScores={initialScores}
         scales={scales}
         chapters={chapters}
+        submissions={submissions}
+        courseId={courseId}
       />
 
       <div className="mt-4 flex justify-end">
